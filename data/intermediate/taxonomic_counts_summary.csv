@@ -1,0 +1,30 @@
+Group,Taxonomy,Unique_Genome_Count,Percentage_of_Group_Genomes,Protein_Count,Percentage_of_Group_Proteins
+Asgard,Heimdallarchaeota,69,22.19,169808,23.04
+Asgard,Helarchaeota,3,0.96,11007,1.49
+Asgard,Hermodarchaeota,2,0.64,4104,0.56
+Asgard,Hodarchaeota,3,0.96,4462,0.61
+Asgard,Lokiarchaeota,4,1.29,15236,2.07
+Asgard,Njordarchaeota,2,0.64,3308,0.45
+Asgard,Odinarchaeota,7,2.25,9354,1.27
+Asgard,Other/Unknown,1,0.32,3120,0.42
+Asgard,Prometheoarchaeota,86,27.65,217115,29.46
+Asgard,Thorarchaeota,60,19.29,127360,17.28
+Asgard,UnknownPhylum,72,23.15,167956,22.79
+Asgard,Wukongarchaeota,2,0.64,4089,0.55
+GV,Ascoviridae,11,2.47,1373,1.27
+GV,Bicaudaviridae,2,0.45,104,0.1
+GV,Chaseviridae,1,0.22,548,0.51
+GV,Fuselloviridae,5,1.12,184,0.17
+GV,Iridoviridae,89,19.96,6699,6.21
+GV,Marseilleviridae,9,2.02,3110,2.88
+GV,Mimiviridae,77,17.26,49606,46.0
+GV,Pandoraviridae,9,2.02,7618,7.06
+GV,Phycodnaviridae,82,18.39,20263,18.79
+GV,Pithoviridae,1,0.22,312,0.29
+GV,Pithoviridae-like,2,0.45,269,0.25
+GV,Unclassified Virus,150,33.63,14665,13.6
+GV,Unknown,12,2.69,3075,2.85
+GV,Yaraviridae,1,0.22,4,0.0
+Overall Asgard,N/A,311,100.0,736919,100.0
+Overall Giant Virus,N/A,446,100.0,107830,100.0
+Overall Database,N/A,757,NA,844750,NA

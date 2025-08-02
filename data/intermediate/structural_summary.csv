@@ -1,0 +1,11 @@
+Metric,Count,Percentage_of_Total
+Total Proteins in Database,844750,100.0
+Proteins with PDB Hit,739,0.09
+Proteins with AlphaFold DB Hit (SeqSearch or pLDDT),224725,26.6
+  - Proteins with AlphaFold DB Hit (SeqSearch_AFDB_Hit only),0,0.0% (of AFDB total)
+"  - Proteins with AlphaFold DB Hit (Avg_pLDDT only, no SeqSearch hit)",224725,100.0% (of AFDB total)
+  - Proteins with AlphaFold DB Hit (Both SeqSearch & Avg_pLDDT),0,0.0% (of AFDB total)
+Proteins with ESMAtlas Hit,241,0.03
+Total Proteins with Any Structural Info (PDB/AFDB/ESMA),225705,26.72
+Structurally Dark Proteins (Calculated: No PDB/AFDB/ESMA),619045,73.28
+Structurally Dark Proteins (from 'Is_Structurally_Dark' column),619783,73.37
