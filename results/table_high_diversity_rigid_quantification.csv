@@ -1,0 +1,9 @@
+Comparison Metric,Diversity Threshold,Count of Rigid OGs,Percentage of Rigid OGs
+APSI,<= 29.76% (Bottom 25% of all OGs),12,2.64
+Mean SE,>= 2.32 (Top 25% of all OGs),7,1.54
+APSI,<= 33.24% (Median of Plastic OGs),36,7.93
+Mean SE,>= 2.12 (Median of Plastic OGs),40,8.81
+APSI,<= 36.32% (Median of All OGs),68,14.98
+Mean SE,>= 2.01 (Median of All OGs),74,16.30
+APSI,<= 35.10% (Mean of Plastic OGs),52,11.45
+Mean SE,>= 2.11 (Mean of Plastic OGs),43,9.47
