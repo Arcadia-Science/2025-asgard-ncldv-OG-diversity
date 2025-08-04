@@ -6,13 +6,18 @@ This repository contains the scripts and analysis notebooks used to investigate 
 
 # Installation and Setup
 
-This repository uses conda to manage software environments and installations. You can find operating system-specific instructions for installing miniconda here. 
+This repository uses conda to manage software environments and installations. You can find operating system-specific instructions for installing miniconda [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
-After installing conda and mamba, run the following command to create the environment used for most analyses.# Environment used for data processing and analysis notebooks
-    mamba env create -n asgard_gv_env --file envs/dev.yml
-    conda activate asgard_gv_env
-    (Note: The envs/dev.yml file will need to be created based on the packages used, e.g., pandas, numpy, plotly, biopython, scipy, statsmodels, arcadia-pycolor, etc.)
-    1. Install your pre-commit hooks:pre-commit install
+After installing conda and mamba, run the following commands to create the environment and set up the repository:
+
+```bash
+# Create the environment used for data processing and analysis
+mamba env create -n asgard_gv_env --file envs/dev.yml
+conda activate asgard_gv_env
+
+# Install pre-commit hooks
+pre-commit install
+```
 
 
 # Data
@@ -57,7 +62,9 @@ envs/: Contains the conda environment definition file.
 
 This section provides example commands to run the key scripts in this repository. The commands assume they are being run from the root directory of the project.
 
+
 ## Main Analysis Pipeline 
+1. OG selection and sequence extraction: From the existing Asgard archaea proteome database (proteome_database_v3.5.csv) we identified all Asgard orthogroups with >20 members (prepare_og_list.py) and extracted all amino acid sequences from those orthogroups into a single FASTA (fetch_og_sequences.py)
 
 This is the core pipeline for generating the sequence and phylogenetic diversity metrics from a set of defined OGs.
 
@@ -165,4 +172,5 @@ pyproject.toml is a configuration file to specify your project's metadata and to
 
 Linting
 This template automates linting and formatting using GitHub Actions and the ruff linter. When you push changes to your repository, GitHub will automatically run the linter and report any errors, blocking merges until they are resolved.
+
 
