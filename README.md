@@ -55,19 +55,85 @@ envs/: Contains the conda environment definition file.
 
 # Methods
 
-The analysis was conducted via a multi-step pipeline executed through a series of Python scripts and Jupyter Notebooks.
+This section provides example commands to run the key scripts in this repository. The commands assume they are being run from the root directory of the project.
 
-1. OG selection and sequence extraction: From the existing Asgard archaea proteome database (proteome_database_v3.5.csv) we identified all Asgard orthogroups with >20 members (prepare_og_list.py) and extracted all amino acid sequences from those orthogroups into a single FASTA (extract_og_sequences.py)
+## Main Analysis Pipeline 
 
-2. Sequence & Phylogenetic Diversity Calculation: For each OG, sequences were aligned with MAFFT (run_initial_mafft_parallel.py) and filtered (filter_mafft_alignments_by_length.py). Length-filtered alignments were then un-aligned and realigned (refine_alignments.py) Phylogenetic trees were inferred from the final alignments using VeryFastTree (run_fasttree_parallel.py). Sequence diversity was quantified from the alignments (Average Pairwise Sequence Identity) and trees (Normalized Hill Diversity) using hill_diversity_v3.py.
+This is the core pipeline for generating the sequence and phylogenetic diversity metrics from a set of defined OGs.
 
-3. Structural Diversity Calculation: We used TM-align to do a comprehensive all-vs-all structural comparison  for all members within each OG that had an available structure. The resulting pairwise TM-scores were aggregated to calculate the mean (Mean_TMscore) and standard deviation (StdDev_TMscore) for each OG.
+1. Extract OG Sequences
 
-4. Data Integration and Analysis: All computed metrics were merged into a master dataframe. OGs were categorized into "Structurally Rigid," "Structurally Plastic," and "Intermediate" profiles based on the 25th and 75th percentiles of their Mean_TMscore and StdDev_TMscore. Open-ended exploration of these data was conducted in the Analysis_V3 notebook.
+This script takes a curated list of OGs and extracts all member sequences from the main proteome database into individual FASTA files.
 
-5. Hypothesis Testing & Visualization: The final analysis, performed in a dedicated Jupyter Notebook (pub_figures.ipynb), tested several hypotheses:
+python scripts/og_sequence_extraction.py \
+    --og_list_csv analysis_outputs/analysis_esp_ogs/curated_esp_og_anchor_list_v1.csv \
+    --proteome_db data/proteome_database_v3.5.csv \
+    --output_dir data/data_esp_ogs/esp_raw_og_fastas
 
-a. The global correlation between sequence diversity (both Hill Diversity and APSI) and structural diversity  was assessed.
+2. Generate Initial Multiple Sequence Alignments
+
+This script runs MAFFT in parallel on the raw FASTA files generated in the previous step.
+
+python scripts/run_initial_mafft_parallel.py \
+    --input_dir data/data_esp_ogs/esp_raw_og_fastas \
+    --output_dir data/data_esp_ogs/initial_mafft_alignments \
+    --log_dir data/data_esp_ogs/initial_mafft_logs \
+    --num_cores 8
+
+3. Filter Alignments by Length
+
+This script filters the initial alignments to remove fragmentary sequences, while ensuring the designated anchor sequence is always kept.
+
+python scripts/length_filtering_keep_anchor.py \
+    --input_aln_dir data/data_esp_ogs/initial_mafft_alignments \
+    --output_dir data/data_esp_ogs/mafft_len_filtered_esp_output \
+    --anchor_list_csv analysis_outputs/analysis_esp_ogs/curated_esp_og_anchor_list_v1.csv
+
+4. Refine Alignments
+
+This script implements a full refinement pipeline: it unaligns the sequences, re-aligns them with MAFFT, and then trims the new alignment with TrimAl to produce the final MSAs for tree inference.
+
+python scripts/refine_alignments.py \
+    --input-dir data/data_esp_ogs/mafft_len_filtered_esp_output \
+    --output-dir data/data_esp_ogs/trimmed_fastas_for_trees_esp \
+    --input-suffix "_len_filtered.aln" \
+    --output-suffix "_final_trimmed.fasta" \
+    --max-workers 8
+
+5. Infer Phylogenetic Trees
+
+This script runs FastTree in parallel on the final, trimmed and refined alignments to generate phylogenetic trees.
+
+python scripts/run_fasttree_parallel.py \
+    -i data/data_esp_ogs/trimmed_fastas_for_trees_esp \
+    -o data/data_esp_ogs/fasttree_output_final_trees_esp \
+    --input_suffix "_final_trimmed.fasta" \
+    --output_suffix "_tree.nwk" \
+    --cores 8
+
+6. Calculate All-vs-All Structural Metrics
+
+This script performs the core structural comparison, running TM-align on all pairs of high-quality structures within each target OG.
+
+python scripts/calculate_all_vs_all_metrics.py \
+    --og-list-csv analysis_outputs/analysis_esp_ogs/curated_esp_og_anchor_list_v1.csv \
+    --proteome-db data/proteome_database_v3.5.csv \
+    --pdb-dir data/downloaded_structures/alphafold_structures \
+    --output-csv analysis_v3/all_vs_all_structural_metrics.csv \
+    --max-workers 8
+
+This final pipeline script reads the MSAs and trees to calculate Hill Diversity, APSI, and Shannon Entropy for each OG.
+
+python scripts/hill_diversity_v3.py \
+    --msa_dir data/data_esp_ogs/trimmed_fastas_for_trees_esp \
+    --tree_dir data/data_esp_ogs/fasttree_output_final_trees_esp \
+    --output_csv analysis_outputs/analysis_esp_ogs/og_diversity_metrics_esp.csv
+
+6. Data Integration and Analysis: All computed metrics were merged into a master dataframe. OGs were categorized into "Structurally Rigid," "Structurally Plastic," and "Intermediate" profiles based on the 25th and 75th percentiles of their Mean_TMscore and StdDev_TMscore. Open-ended exploration of these data was conducted in the Analysis_V3 notebook.
+
+7. Hypothesis Testing & Visualization: The final analysis, performed in a dedicated Jupyter Notebook (pub_figures.ipynb), tested several hypotheses:
+
+a. The global correlation between sequence diversity (both Hill Diversity and APSI) and structural 	diversity  was assessed.
 
 b. The distributions of domain count and intrinsic disorder were compared across structural profiles using KDE plots.
 
@@ -76,6 +142,7 @@ c. The relationship between sequence and structure was explored within specific 
 d. Per-column Shannon entropy was analyzed to compare conservation patterns between structural profiles, leading to the "islands of conservation" hypothesis.
 
 # Compute Specifications
+
 Local Machine: Apple MacBook Pro M3 Max, 36 GB RAM (Used for scripting, data integration, statistical analysis, and figure generation).
 
 AWS EC2: Used for the all-vs-all TM-align. Amazon Linux2 c6a32X large with 128 CPUs. 
@@ -83,9 +150,11 @@ AWS EC2: Used for the all-vs-all TM-align. Amazon Linux2 c6a32X large with 128 C
 Key Software: Python 3.10 (via Conda/Mamba), Pandas, NumPy, SciPy, Statsmodels, Plotly, arcadia-pycolor, BioPython, MAFFT, FastTree, TM-align.
 
 # For Developers
+
 This section contains information for developers who are working off of this template. Please adjust or edit this section as appropriate when you're ready to share your repo.
 
 # GitHub templates
+
 This template uses GitHub templates to provide checklists when making new pull requests. These templates are stored in the .github/ directory.
 
 .gitignore
