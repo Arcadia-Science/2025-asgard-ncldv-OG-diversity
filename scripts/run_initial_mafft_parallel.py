@@ -80,21 +80,12 @@ def parse_arguments() -> argparse.Namespace:
         description="Run MAFFT alignment in parallel for initial OG alignments (ultra-filtered large OGs track).",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    
-    script_dir = Path(__file__).resolve().parent
-    base_project_dir = script_dir.parent 
-    
-    # Define the new base directory for this filtered run
-    new_pipeline_data_dir = base_project_dir / "data" / "data_esp_ogs" # UPDATED
 
-    parser.add_argument("-i", "--input_dir", type=Path,
-                        default=new_pipeline_data_dir / "esp_raw_og_fastas", # UPDATED
-                        help="Input directory containing raw FASTA files esp OGs.")
-    parser.add_argument("-o", "--output_dir", type=Path,
-                        default=new_pipeline_data_dir / "initial_mafft_alignments", # UPDATED
+    parser.add_argument("-i", "--input_dir", type=Path, required=True,
+                        help="Input directory containing raw FASTA files for alignment.")
+    parser.add_argument("-o", "--output_dir", type=Path, required=True,
                         help="Output directory for MAFFT aligned files.")
-    parser.add_argument("-l", "--log_dir", type=Path,
-                        default=new_pipeline_data_dir / "initial_mafft_logs", # UPDATED
+    parser.add_argument("-l", "--log_dir", type=Path, required=True,
                         help="Output directory for MAFFT stderr logs.")
     parser.add_argument("--input_suffix", default=".fasta",
                         help="Suffix of input FASTA files to process.")
