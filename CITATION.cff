@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: If you use this software, please cite the associated publication.
+title: Sequence-structure relationships among Asgard archaea proteins
+doi: 10.57844/arcadia-xfqs-5k8a
+authors:
+- family-names: Goldstein
+  given-names: Stephen A.
+  affiliation: Arcadia Science
+  orcid: https://orcid.org/0000-0002-9397-1097
+- family-names: Mets
+  given-names: David G.
+  affiliation: Arcadia Science
+  orcid: https://orcid.org/0000-0002-0803-0912
+- family-names: York
+  given-names: Ryan
+  affiliation: Arcadia Science
+  orcid: https://orcid.org/0000-0002-1073-1494
+preferred-citation:
+  title: Sequence-structure relationships among Asgard archaea proteins
+  type: article
+  doi: 10.57844/arcadia-xfqs-5k8a
+  authors:
+  - family-names: Goldstein
+    given-names: Stephen A.
+    affiliation: Arcadia Science
+    orcid: https://orcid.org/0000-0002-9397-1097
+  - family-names: Mets
+    given-names: David G.
+    affiliation: Arcadia Science
+    orcid: https://orcid.org/0000-0002-0803-0912
+  - family-names: York
+    given-names: Ryan
+    affiliation: Arcadia Science
+    orcid: https://orcid.org/0000-0002-1073-1494
+  year: 2025
