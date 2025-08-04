@@ -6,13 +6,18 @@ This repository contains the scripts and analysis notebooks used to investigate 
 
 # Installation and Setup
 
-This repository uses conda to manage software environments and installations. You can find operating system-specific instructions for installing miniconda here. 
+This repository uses conda to manage software environments and installations. You can find operating system-specific instructions for installing miniconda [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
-After installing conda and mamba, run the following command to create the environment used for most analyses.# Environment used for data processing and analysis notebooks
-    mamba env create -n asgard_gv_env --file envs/dev.yml
-    conda activate asgard_gv_env
-    (Note: The envs/dev.yml file will need to be created based on the packages used, e.g., pandas, numpy, plotly, biopython, scipy, statsmodels, arcadia-pycolor, etc.)
-    1. Install your pre-commit hooks:pre-commit install
+After installing conda and mamba, run the following commands to create the environment and set up the repository:
+
+```bash
+# Create the environment used for data processing and analysis
+mamba env create -n asgard_gv_env --file envs/dev.yml
+conda activate asgard_gv_env
+
+# Install pre-commit hooks
+pre-commit install
+```
 
 
 # Data
@@ -57,7 +62,7 @@ envs/: Contains the conda environment definition file.
 
 The analysis was conducted via a multi-step pipeline executed through a series of Python scripts and Jupyter Notebooks.
 
-1. OG selection and sequence extraction: From the existing Asgard archaea proteome database (proteome_database_v3.5.csv) we identified all Asgard orthogroups with >20 members (prepare_og_list.py) and extracted all amino acid sequences from those orthogroups into a single FASTA (extract_og_sequences.py)
+1. OG selection and sequence extraction: From the existing Asgard archaea proteome database (proteome_database_v3.5.csv) we identified all Asgard orthogroups with >20 members (prepare_og_list.py) and extracted all amino acid sequences from those orthogroups into a single FASTA (fetch_og_sequences.py)
 
 2. Sequence & Phylogenetic Diversity Calculation: For each OG, sequences were aligned with MAFFT (run_initial_mafft_parallel.py) and filtered (filter_mafft_alignments_by_length.py). Length-filtered alignments were then un-aligned and realigned (refine_alignments.py) Phylogenetic trees were inferred from the final alignments using VeryFastTree (run_fasttree_parallel.py). Sequence diversity was quantified from the alignments (Average Pairwise Sequence Identity) and trees (Normalized Hill Diversity) using hill_diversity_v3.py.
 
@@ -82,18 +87,4 @@ AWS EC2: Used for the all-vs-all TM-align. Amazon Linux2 c6a32X large with 128 C
 
 Key Software: Python 3.10 (via Conda/Mamba), Pandas, NumPy, SciPy, Statsmodels, Plotly, arcadia-pycolor, BioPython, MAFFT, FastTree, TM-align.
 
-# For Developers
-This section contains information for developers who are working off of this template. Please adjust or edit this section as appropriate when you're ready to share your repo.
-
-# GitHub templates
-This template uses GitHub templates to provide checklists when making new pull requests. These templates are stored in the .github/ directory.
-
-.gitignore
-This template uses a .gitignore file to prevent certain files from being committed to the repository.
-
-pyproject.toml
-pyproject.toml is a configuration file to specify your project's metadata and to set the behavior of other tools such as linters, type checkers etc. You can learn more here
-
-Linting
-This template automates linting and formatting using GitHub Actions and the ruff linter. When you push changes to your repository, GitHub will automatically run the linter and report any errors, blocking merges until they are resolved.
 
