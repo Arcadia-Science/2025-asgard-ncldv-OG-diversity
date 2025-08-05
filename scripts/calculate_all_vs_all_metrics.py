@@ -27,13 +27,16 @@ def parse_tmalign_output(output: str) -> dict:
     results = {"TMscore_1": np.nan, "TMscore_2": np.nan, "RMSD": np.nan}
     try:
         tm_score_1_match = re.search(r"TM-score=\s*([0-9.]+)\s*\(if normalized by length of Chain_1", output)
-        if tm_score_1_match: results["TMscore_1"] = float(tm_score_1_match.group(1))
+        if tm_score_1_match:
+            results["TMscore_1"] = float(tm_score_1_match.group(1))
         
         tm_score_2_match = re.search(r"TM-score=\s*([0-9.]+)\s*\(if normalized by length of Chain_2", output)
-        if tm_score_2_match: results["TMscore_2"] = float(tm_score_2_match.group(1))
+        if tm_score_2_match:
+            results["TMscore_2"] = float(tm_score_2_match.group(1))
         
         aligned_length_rmsd_match = re.search(r"Aligned length=\s*(\d+),\s*RMSD=\s*([0-9.]+)", output)
-        if aligned_length_rmsd_match: results["RMSD"] = float(aligned_length_rmsd_match.group(2))
+        if aligned_length_rmsd_match:
+            results["RMSD"] = float(aligned_length_rmsd_match.group(2))
         
         if pd.isna(results["TMscore_1"]):
             raise ValueError("Could not parse TM-score from output.")

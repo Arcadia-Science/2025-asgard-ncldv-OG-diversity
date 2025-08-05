@@ -12,7 +12,6 @@ Output: MAFFT alignments in DATA_DIR/data_large_ogs_gt100mem_gt15id/initial_maff
 
 import os
 import sys
-import glob
 import subprocess
 import logging
 import time
@@ -54,16 +53,18 @@ def run_mafft_on_file(fasta_file_path: Path, output_dir: Path, log_dir: Path,
     command = [mafft_exe] + mafft_args + [str(fasta_file_path)]
     try:
         with open(output_aln_path, 'w') as f_out, open(output_log_path, 'w') as f_err:
-            process = subprocess.run(command, stdout=f_out, stderr=f_err, check=True, text=True, encoding='utf-8')
+            subprocess.run(command, stdout=f_out, stderr=f_err, check=True, text=True, encoding='utf-8')
         if not output_aln_path.stat().st_size > 0:
-             error_info = "Unknown MAFFT issue (empty output)"
-             try: 
-                  with open(output_log_path, 'r', encoding='utf-8') as f_log_read:
-                       log_content = f_log_read.read(500).strip()
-                       if log_content: error_info = f"MAFFT Error (see log): {log_content}..."
-             except Exception: pass 
-             logger.warning(f"MAFFT created an empty alignment file for {base_name} (ID: {identifier}). Check log: {output_log_path}")
-             return base_name, identifier, error_info
+            error_info = "Unknown MAFFT issue (empty output)"
+            try:
+                with open(output_log_path, 'r', encoding='utf-8') as f_log_read:
+                    log_content = f_log_read.read(500).strip()
+                    if log_content:
+                        error_info = f"MAFFT Error (see log): {log_content}..."
+            except Exception:
+                pass
+            logger.warning(f"MAFFT created an empty alignment file for {base_name} (ID: {identifier}). Check log: {output_log_path}")
+            return base_name, identifier, error_info
         return base_name, identifier, "Success"
     except FileNotFoundError:
         logger.error(f"MAFFT executable '{mafft_exe}' not found. Failed for {base_name} (ID: {identifier}).")
@@ -109,7 +110,8 @@ def main():
 
     mafft_exe_path = shutil.which(args.mafft_exe)
     if not mafft_exe_path:
-        logger.error(f"MAFFT executable '{args.mafft_exe}' not found in PATH or is not executable. Please install MAFFT or provide the correct path."); sys.exit(1)
+        logger.error(f"MAFFT executable '{args.mafft_exe}' not found in PATH or is not executable. Please install MAFFT or provide the correct path.")
+        sys.exit(1)
     logger.info(f"Using MAFFT executable: {mafft_exe_path}")
 
     mafft_args_list = args.mafft_args.split()
@@ -125,7 +127,8 @@ def main():
 
     fasta_files = sorted(list(args.input_dir.glob(f"*{args.input_suffix}")))
     if not fasta_files:
-        logger.error(f"No files matching '*{args.input_suffix}' found in {args.input_dir}. Stopping."); sys.exit(1)
+        logger.error(f"No files matching '*{args.input_suffix}' found in {args.input_dir}. Stopping.")
+        sys.exit(1)
 
     logger.info(f"Found {len(fasta_files)} FASTA files to align for the ultra-filtered large OGs set.")
     logger.info(f"Running up to {args.num_cores} MAFFT jobs in parallel...")

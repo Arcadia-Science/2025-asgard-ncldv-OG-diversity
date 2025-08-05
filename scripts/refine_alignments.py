@@ -35,7 +35,7 @@ def run_command(command: list, log_path: Path):
         try:
             subprocess.run(command, check=True, stdout=f_log, stderr=subprocess.STDOUT)
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             logging.error(f"Command '{' '.join(command)}' failed. See log: {log_path}")
             return False
         except Exception as e:
