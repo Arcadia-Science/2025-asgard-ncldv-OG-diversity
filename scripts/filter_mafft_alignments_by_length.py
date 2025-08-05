@@ -1,6 +1,11 @@
 import pandas as pd
 import numpy as np
 from Bio import AlignIO, SeqIO
+import os
+import glob
+from Bio import AlignIO, SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from tqdm.auto import tqdm
 import logging
 from pathlib import Path
@@ -21,6 +26,7 @@ else:
              handler.setLevel(logging.INFO)
     if logger.level > logging.INFO:
         logger.setLevel(logging.INFO)
+    if logger.level > logging.INFO : logger.setLevel(logging.INFO)
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
