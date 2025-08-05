@@ -72,37 +72,37 @@ This is the core pipeline for generating the sequence and phylogenetic diversity
 
 This script takes a curated list of OGs and extracts all member sequences from the main proteome database into individual FASTA files.
 
-python scripts/og_sequence_extraction.py \
-    --og_list_csv analysis_outputs/analysis_esp_ogs/curated_esp_og_anchor_list_v1.csv \
-    --proteome_db data/proteome_database_v3.5.csv \
-    --output_dir data/data_esp_ogs/esp_raw_og_fastas
+python scripts/fetch_og_sequences.py \
+    --og-list-csv path/to/your/og_list.csv \
+    --proteome-db path/to/your/proteome_database_v3.5.csv \
+    --output-dir path/to/your/raw_og_fastas
 
 2. Generate Initial Multiple Sequence Alignments
 
 This script runs MAFFT in parallel on the raw FASTA files generated in the previous step.
 
 python scripts/run_initial_mafft_parallel.py \
-    --input_dir data/data_esp_ogs/esp_raw_og_fastas \
-    --output_dir data/data_esp_ogs/initial_mafft_alignments \
-    --log_dir data/data_esp_ogs/initial_mafft_logs \
+    --input_dir path/to/your/raw_og_fastas \
+    --output_dir path/to/your/initial_mafft_alignments \
+    --log_dir path/to/your/initial_mafft_logs \
     --num_cores 8
 
 3. Filter Alignments by Length
 
-This script filters the initial alignments to remove fragmentary sequences, while ensuring the designated anchor sequence is always kept.
+This script filters the initial alignments to remove fragmentary sequences based on the median length of sequences in the alignment.
 
-python scripts/length_filtering_keep_anchor.py \
-    --input_aln_dir data/data_esp_ogs/initial_mafft_alignments \
-    --output_dir data/data_esp_ogs/mafft_len_filtered_esp_output \
-    --anchor_list_csv analysis_outputs/analysis_esp_ogs/curated_esp_og_anchor_list_v1.csv
+python scripts/filter_mafft_alignments_by_length.py \
+    --input-dir path/to/your/initial_mafft_alignments \
+    --output-dir path/to/your/mafft_len_filtered_output \
+    --input-suffix ".aln"
 
 4. Refine Alignments
 
 This script implements a full refinement pipeline: it unaligns the sequences, re-aligns them with MAFFT, and then trims the new alignment with TrimAl to produce the final MSAs for tree inference.
 
 python scripts/refine_alignments.py \
-    --input-dir data/data_esp_ogs/mafft_len_filtered_esp_output \
-    --output-dir data/data_esp_ogs/trimmed_fastas_for_trees_esp \
+    --input-dir path/to/your/mafft_len_filtered_output \
+    --output-dir path/to/your/trimmed_fastas_for_trees \
     --input-suffix "_len_filtered.aln" \
     --output-suffix "_final_trimmed.fasta" \
     --max-workers 8
@@ -112,8 +112,8 @@ python scripts/refine_alignments.py \
 This script runs FastTree in parallel on the final, trimmed and refined alignments to generate phylogenetic trees.
 
 python scripts/run_fasttree_parallel.py \
-    -i data/data_esp_ogs/trimmed_fastas_for_trees_esp \
-    -o data/data_esp_ogs/fasttree_output_final_trees_esp \
+    -i path/to/your/trimmed_fastas_for_trees \
+    -o path/to/your/fasttree_output_final_trees \
     --input_suffix "_final_trimmed.fasta" \
     --output_suffix "_tree.nwk" \
     --cores 8
@@ -123,20 +123,22 @@ python scripts/run_fasttree_parallel.py \
 This script performs the core structural comparison, running TM-align on all pairs of high-quality structures within each target OG.
 
 python scripts/calculate_all_vs_all_metrics.py \
-    --og-list-csv analysis_outputs/analysis_esp_ogs/curated_esp_og_anchor_list_v1.csv \
-    --proteome-db data/proteome_database_v3.5.csv \
-    --pdb-dir data/downloaded_structures/alphafold_structures \
-    --output-csv analysis_v3/all_vs_all_structural_metrics.csv \
+    --og-list-csv path/to/your/og_list.csv \
+    --proteome-db path/to/your/proteome_database_v3.5.csv \
+    --pdb-dir path/to/your/downloaded_structures/alphafold_structures \
+    --output-csv path/to/your/all_vs_all_structural_metrics.csv \
     --max-workers 8
+
+7. Calculate Sequence Diversity Metrics
 
 This final pipeline script reads the MSAs and trees to calculate Hill Diversity, APSI, and Shannon Entropy for each OG.
 
-python scripts/hill_diversity_v3.py \
-    --msa_dir data/data_esp_ogs/trimmed_fastas_for_trees_esp \
-    --tree_dir data/data_esp_ogs/fasttree_output_final_trees_esp \
-    --output_csv analysis_outputs/analysis_esp_ogs/og_diversity_metrics_esp.csv
+python scripts/calculate_sequence_diversity.py \
+    --msa-dir path/to/your/trimmed_fastas_for_trees \
+    --tree-dir path/to/your/fasttree_output_final_trees \
+    --output-csv path/to/your/og_diversity_metrics.csv
 
-6. Data Integration and Analysis: All computed metrics were merged into a master dataframe. OGs were categorized into "Structurally Rigid," "Structurally Plastic," and "Intermediate" profiles based on the 25th and 75th percentiles of their Mean_TMscore and StdDev_TMscore. Open-ended exploration of these data was conducted in the Analysis_V3 notebook.
+8. Data Integration and Analysis: All computed metrics were merged into a master dataframe. OGs were categorized into "Structurally Rigid," "Structurally Plastic," and "Intermediate" profiles based on the 25th and 75th percentiles of their Mean_TMscore and StdDev_TMscore. Open-ended exploration of these data was conducted in the Analysis_V3 notebook.
 
 7. Hypothesis Testing & Visualization: The final analysis, performed in a dedicated Jupyter Notebook (pub_figures.ipynb), tested several hypotheses:
 

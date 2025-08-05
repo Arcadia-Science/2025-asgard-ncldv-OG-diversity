@@ -2,127 +2,148 @@ import pandas as pd
 import numpy as np
 import os
 import glob
-from Bio import AlignIO, SeqIO # Ensure SeqIO is imported
+from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from tqdm.auto import tqdm
 import logging
 from pathlib import Path
+import argparse
 
 # --- Setup Logging ---
 logger = logging.getLogger(__name__)
-if not logger.handlers: # Use .handlers instead of .hasHandlers() for Python 3.7+
+if not logger.handlers:
     logger.setLevel(logging.INFO)
     console_handler = logging.StreamHandler()
     log_formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(filename)s.%(funcName)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     console_handler.setFormatter(log_formatter)
     logger.addHandler(console_handler)
-    logger.propagate = False # Avoid duplicate logs if root logger is also configured
+    logger.propagate = False
 else:
-    # If logger already has handlers, ensure its level is set
-    # This might not be necessary if the above block always runs once per module import
-    for handler in logger.handlers: # Ensure all handlers are at least INFO
+    for handler in logger.handlers:
         if handler.level > logging.INFO:
              handler.setLevel(logging.INFO)
     if logger.level > logging.INFO : logger.setLevel(logging.INFO)
 
-
-# --- Configuration ---
-SCRIPT_DIR = Path(__file__).resolve().parent
-BASE_DIR = SCRIPT_DIR.parent # Assumes script is in 'scripts' directory
-DATA_DIR = BASE_DIR / "data"
-ANALYSIS_OUTPUTS_DIR = BASE_DIR / "analysis_outputs"
-
-
-# Input directory for MAFFT alignments (output from the initial MAFFT script)
-INPUT_ALN_DIR = DATA_DIR / "initial_mafft_alignments"
-
-# Output directory for length-filtered FASTA alignment files
-OUTPUT_LEN_FILTERED_ALN_DIR = DATA_DIR / "mafft_len_filtered_output"
-
-# Input file suffix (from initial MAFFT script)
-INPUT_ALN_SUFFIX = ".aln"
-# Output file suffix for this script
-OUTPUT_FILTERED_SUFFIX = "_len_filtered.aln"
-
-
-# Filtering Parameters
-MIN_LENGTH_PERCENTAGE_OF_MEDIAN = 70.0 
-MIN_ABSOLUTE_NON_GAP_LENGTH = 0 
-
-SUMMARY_LOG_FILE = OUTPUT_LEN_FILTERED_ALN_DIR / "length_filtering_log.csv"
-# --- End Configuration ---
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Filter MAFFT alignments based on sequence length.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--input-dir",
+        type=Path,
+        required=True,
+        help="Input directory containing MAFFT alignment files."
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        required=True,
+        help="Output directory for length-filtered alignment files."
+    )
+    parser.add_argument(
+        "--summary-log",
+        type=Path,
+        default=None,
+        help="Path to save the summary log CSV file. Defaults to 'length_filtering_log.csv' in the output directory."
+    )
+    parser.add_argument(
+        "--min-length-perc",
+        type=float,
+        default=70.0,
+        help="Minimum length percentage of the median non-gap length to keep a sequence."
+    )
+    parser.add_argument(
+        "--min-abs-length",
+        type=int,
+        default=0,
+        help="Minimum absolute non-gap length to keep a sequence. Overrides percentage if higher."
+    )
+    parser.add_argument(
+        "--input-suffix",
+        type=str,
+        default=".aln",
+        help="Suffix of input alignment files."
+    )
+    parser.add_argument(
+        "--output-suffix",
+        type=str,
+        default="_len_filtered.aln",
+        help="Suffix for output filtered alignment files."
+    )
+    return parser.parse_args()
 
 def calculate_non_gap_length(seq_str: str) -> int:
     """Calculates the number of non-gap characters in a sequence string."""
     return len(seq_str.replace('-', ''))
 
-# --- Main Script ---
 def main():
-    logger.info(f"Starting Length-Based Filtering of MAFFT Aligned Sequences...")
-    logger.info(f"Input MAFFT directory: {INPUT_ALN_DIR}")
-    logger.info(f"Output directory for length-filtered alignments: {OUTPUT_LEN_FILTERED_ALN_DIR}")
-    logger.info(f"Keeping sequences >= {MIN_LENGTH_PERCENTAGE_OF_MEDIAN}% of median non-gap length.")
-    if MIN_ABSOLUTE_NON_GAP_LENGTH and MIN_ABSOLUTE_NON_GAP_LENGTH > 0:
-        logger.info(f"Additionally, keeping sequences with absolute non-gap length >= {MIN_ABSOLUTE_NON_GAP_LENGTH} AAs.")
+    """Main execution function."""
+    args = parse_arguments()
 
-    OUTPUT_LEN_FILTERED_ALN_DIR.mkdir(parents=True, exist_ok=True)
+    # If summary log is not specified, create it in the output directory
+    summary_log_file = args.summary_log
+    if summary_log_file is None:
+        summary_log_file = args.output_dir / "length_filtering_log.csv"
 
-    # Use pathlib glob and ensure input suffix matches
-    alignment_files = sorted(list(INPUT_ALN_DIR.glob(f"*{INPUT_ALN_SUFFIX}")))
+    logger.info("Starting Length-Based Filtering of MAFFT Aligned Sequences...")
+    logger.info(f"Input MAFFT directory: {args.input_dir}")
+    logger.info(f"Output directory for length-filtered alignments: {args.output_dir}")
+    logger.info(f"Keeping sequences >= {args.min_length_perc}% of median non-gap length.")
+    if args.min_abs_length > 0:
+        logger.info(f"Additionally, keeping sequences with absolute non-gap length >= {args.min_abs_length} AAs.")
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    alignment_files = sorted(list(args.input_dir.glob(f"*{args.input_suffix}")))
     
     if not alignment_files:
-        logger.warning(f"No alignment files found in '{INPUT_ALN_DIR}' with pattern '*{INPUT_ALN_SUFFIX}'. Exiting.")
+        logger.warning(f"No alignment files found in '{args.input_dir}' with pattern '*{args.input_suffix}'. Exiting.")
         return
 
     logger.info(f"Found {len(alignment_files)} alignment files to process.")
     filtering_summary_log = []
 
     for aln_filepath_obj in tqdm(alignment_files, desc="Filtering Alignments by Length"):
-        aln_filepath = str(aln_filepath_obj) # Convert Path object to string for older BioPython or os.path functions if needed
         base_aln_filename = aln_filepath_obj.name
         
-        # Extract OG ID: assumes filename like OGXXXX.ASG.aln or OGXXXX.GV.aln
-        # Takes the part before the first dot if multiple dots, or before .aln
+        # Extract OG ID
         identifier_parts = base_aln_filename.split('.')
-        if len(identifier_parts) > 1 and identifier_parts[-1] == INPUT_ALN_SUFFIX.lstrip('.'): # e.g. .aln
-            og_id_for_log = '.'.join(identifier_parts[:-1]) # Joins back if OG_ID had dots, e.g. OGXXXX.ASG
+        if len(identifier_parts) > 1 and base_aln_filename.endswith(args.input_suffix):
+            og_id_for_log = base_aln_filename[:-len(args.input_suffix)]
         else:
-            og_id_for_log = aln_filepath_obj.stem # Fallback: OGXXXX if filename is OGXXXX.aln
+            og_id_for_log = aln_filepath_obj.stem
 
         logger.debug(f"Processing: {base_aln_filename} for OG: {og_id_for_log}")
 
         try:
-            alignment_records = list(AlignIO.read(aln_filepath, "fasta")) 
+            alignment_records = list(AlignIO.read(aln_filepath_obj, "fasta"))
             if not alignment_records: 
-                logger.warning(f"Alignment file '{aln_filepath}' is empty or could not be read. Skipping.")
+                logger.warning(f"Alignment file '{base_aln_filename}' is empty or could not be read. Skipping.")
                 filtering_summary_log.append({"Orthogroup": og_id_for_log, "Initial_Seqs": 0, "Median_NonGap_Length": np.nan,
                                           "Threshold_Length_Used": np.nan, "Seqs_After_Length_Filter": 0, "Status": "Empty/Unreadable"})
                 continue
 
             initial_seq_count = len(alignment_records)
             
-            seq_data_for_filtering = []
-            for record in alignment_records:
-                non_gap_len = calculate_non_gap_length(str(record.seq))
-                seq_data_for_filtering.append({'record': record, 'non_gap_length': non_gap_len})
+            seq_data_for_filtering = [{'record': r, 'non_gap_length': calculate_non_gap_length(str(r.seq))} for r in alignment_records]
             
             df_seq_lengths = pd.DataFrame(seq_data_for_filtering)
             
             if df_seq_lengths.empty or df_seq_lengths['non_gap_length'].isnull().all():
-                 logger.warning(f"Could not calculate non-gap lengths for sequences in '{aln_filepath}'. Skipping OG.")
+                 logger.warning(f"Could not calculate non-gap lengths for sequences in '{base_aln_filename}'. Skipping OG.")
                  filtering_summary_log.append({"Orthogroup": og_id_for_log, "Initial_Seqs": initial_seq_count, "Median_NonGap_Length": np.nan,
                                            "Threshold_Length_Used": np.nan, "Seqs_After_Length_Filter": 0, "Status": "Non-gap length calculation failed"})
                  continue
 
             median_non_gap_length = df_seq_lengths['non_gap_length'].median()
-            length_threshold_percent_based = (MIN_LENGTH_PERCENTAGE_OF_MEDIAN / 100.0) * median_non_gap_length
+            length_threshold_percent_based = (args.min_length_perc / 100.0) * median_non_gap_length
             
-            final_length_threshold = length_threshold_percent_based
-            if MIN_ABSOLUTE_NON_GAP_LENGTH and MIN_ABSOLUTE_NON_GAP_LENGTH > 0:
-                final_length_threshold = max(length_threshold_percent_based, MIN_ABSOLUTE_NON_GAP_LENGTH)
+            final_length_threshold = max(length_threshold_percent_based, args.min_abs_length)
             
-            logger.debug(f"OG {og_id_for_log}: Median non-gap len: {median_non_gap_length:.0f}, "+
+            logger.debug(f"OG {og_id_for_log}: Median non-gap len: {median_non_gap_length:.0f}, "
                          f"Threshold due to %: {length_threshold_percent_based:.0f}, Final Threshold: {final_length_threshold:.0f}")
 
             filtered_records = [
@@ -135,15 +156,14 @@ def main():
             filtering_summary_log.append({
                 "Orthogroup": og_id_for_log, 
                 "Initial_Seqs": initial_seq_count, 
-                "Median_NonGap_Length": round(median_non_gap_length,1) if pd.notna(median_non_gap_length) else np.nan,
-                "Threshold_Length_Used": round(final_length_threshold,1) if pd.notna(final_length_threshold) else np.nan,
+                "Median_NonGap_Length": round(median_non_gap_length, 1) if pd.notna(median_non_gap_length) else np.nan,
+                "Threshold_Length_Used": round(final_length_threshold, 1) if pd.notna(final_length_threshold) else np.nan,
                 "Seqs_After_Length_Filter": num_after_filter,
                 "Status": "Processed"
             })
 
             if num_after_filter >= 2: 
-                # Use the new output suffix
-                output_filtered_filename = OUTPUT_LEN_FILTERED_ALN_DIR / f"{og_id_for_log}{OUTPUT_FILTERED_SUFFIX}"
+                output_filtered_filename = args.output_dir / f"{og_id_for_log}{args.output_suffix}"
                 try:
                     SeqIO.write(filtered_records, output_filtered_filename, "fasta")
                 except Exception as e:
@@ -154,20 +174,20 @@ def main():
                 logger.warning(f"No sequences remained for OG {og_id_for_log} after length filtering. No file written.")
 
         except Exception as e:
-            logger.error(f"Failed to process alignment file '{aln_filepath}': {e}", exc_info=True)
+            logger.error(f"Failed to process alignment file '{base_aln_filename}': {e}", exc_info=True)
             filtering_summary_log.append({"Orthogroup": og_id_for_log, "Initial_Seqs": "Error", "Median_NonGap_Length": np.nan,
                                       "Threshold_Length_Used": np.nan, "Seqs_After_Length_Filter": "Error", "Status": "Processing Error"})
     
     if filtering_summary_log:
         df_summary = pd.DataFrame(filtering_summary_log)
         try:
-            df_summary.to_csv(SUMMARY_LOG_FILE, index=False)
-            logger.info(f"Length filtering summary log saved to: {SUMMARY_LOG_FILE}")
+            df_summary.to_csv(summary_log_file, index=False)
+            logger.info(f"Length filtering summary log saved to: {summary_log_file}")
         except Exception as e:
             logger.error(f"Could not save length filtering summary log: {e}")
 
-    logger.info(f"Length-based filtering finished. Filtered alignments are in: {OUTPUT_LEN_FILTERED_ALN_DIR}")
-    logger.info(f"Next step: Run 'run_realign_trimal.sh' on alignments in '{OUTPUT_LEN_FILTERED_ALN_DIR}'.")
+    logger.info(f"Length-based filtering finished. Filtered alignments are in: {args.output_dir}")
+    logger.info(f"Next step: Run 'refine_alignments.py' on alignments in '{args.output_dir}'.")
 
 if __name__ == "__main__":
     main()
