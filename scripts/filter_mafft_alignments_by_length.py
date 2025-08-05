@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from Bio import AlignIO, SeqIO
 import os
 import glob
 from Bio import AlignIO, SeqIO
@@ -23,6 +24,8 @@ else:
     for handler in logger.handlers:
         if handler.level > logging.INFO:
              handler.setLevel(logging.INFO)
+    if logger.level > logging.INFO:
+        logger.setLevel(logging.INFO)
     if logger.level > logging.INFO : logger.setLevel(logging.INFO)
 
 def parse_arguments() -> argparse.Namespace:

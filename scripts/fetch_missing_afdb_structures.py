@@ -12,7 +12,6 @@ Output: Downloads PDB files to downloaded_structures/alphafold/
 
 import pandas as pd
 import requests
-import os
 import time
 import logging
 from pathlib import Path
@@ -128,7 +127,7 @@ def main():
         logger.critical(f"ERROR: Input CSV is missing required columns: {missing_cols}. Exiting.")
         return
 
-    proteins_to_fetch = df_input[df_input[LOCAL_FILE_FOUND_COL] == False]
+    proteins_to_fetch = df_input[not df_input[LOCAL_FILE_FOUND_COL]]
     logger.info(f"Found {len(proteins_to_fetch)} proteins marked with '{LOCAL_FILE_FOUND_COL}'=False to potentially fetch.")
 
     for index, row in tqdm(proteins_to_fetch.iterrows(), total=len(proteins_to_fetch), desc="Fetching Missing AFDB Structures"):

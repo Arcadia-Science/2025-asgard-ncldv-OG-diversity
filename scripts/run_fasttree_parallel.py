@@ -10,7 +10,6 @@ output tree already exists and is non-empty.
 
 import os
 import sys
-import glob
 import subprocess
 import logging
 import time
@@ -97,22 +96,26 @@ def run_fasttree_on_file(args_tuple: tuple) -> tuple[str, str, str]:
 
         if process.returncode != 0:
             logging.error(f"FastTree failed for {base_name} with exit code {process.returncode}. Check log: {process_log_path}")
-            if output_nwk_path.exists(): # Remove potentially incomplete/empty output on error
-                 if output_nwk_path.stat().st_size == 0: output_nwk_path.unlink(missing_ok=True)
+            if output_nwk_path.exists():  # Remove potentially incomplete/empty output on error
+                if output_nwk_path.stat().st_size == 0:
+                    output_nwk_path.unlink(missing_ok=True)
             return base_name, f"Error: FastTree failed (Code {process.returncode})", str(output_nwk_path)
 
         # Verify output file was created and is not empty
         if not output_nwk_path.exists() or not output_nwk_path.stat().st_size > 0:
-             error_info = "FastTree Error (Output missing or empty after successful run)"
-             log_content = ""
-             try: 
-                  with open(process_log_path, 'r', encoding='utf-8', errors='ignore') as f_log_read:
-                       log_content = f_log_read.read(500).strip() 
-                       if log_content: error_info = f"FastTree Info/Error (see process log): {log_content}..."
-             except Exception: pass
-             if output_nwk_path.exists(): output_nwk_path.unlink(missing_ok=True)
-             logging.warning(f"FastTree ran for {base_name} (exit 0) but produced no/empty output. {error_info}. Log: {process_log_path}")
-             return base_name, error_info, str(output_nwk_path)
+            error_info = "FastTree Error (Output missing or empty after successful run)"
+            log_content = ""
+            try:
+                with open(process_log_path, 'r', encoding='utf-8', errors='ignore') as f_log_read:
+                    log_content = f_log_read.read(500).strip()
+                    if log_content:
+                        error_info = f"FastTree Info/Error (see process log): {log_content}..."
+            except Exception:
+                pass
+            if output_nwk_path.exists():
+                output_nwk_path.unlink(missing_ok=True)
+            logging.warning(f"FastTree ran for {base_name} (exit 0) but produced no/empty output. {error_info}. Log: {process_log_path}")
+            return base_name, error_info, str(output_nwk_path)
 
         return base_name, "Success", str(output_nwk_path)
 
@@ -121,11 +124,13 @@ def run_fasttree_on_file(args_tuple: tuple) -> tuple[str, str, str]:
         return base_name, f"Error: FastTree not found at {fasttree_exe_path}", str(output_nwk_path)
     except subprocess.TimeoutExpired:
         logging.warning(f"FastTree timed out for {base_name} after {timeout_sec} seconds. Check log: {process_log_path}")
-        if output_nwk_path.exists(): output_nwk_path.unlink(missing_ok=True)
+        if output_nwk_path.exists():
+            output_nwk_path.unlink(missing_ok=True)
         return base_name, f"Error: Timeout ({timeout_sec}s)", str(output_nwk_path)
     except Exception as e:
         logging.exception(f"An unexpected error occurred while running FastTree for {base_name}: {e}")
-        if output_nwk_path.exists(): output_nwk_path.unlink(missing_ok=True)
+        if output_nwk_path.exists():
+            output_nwk_path.unlink(missing_ok=True)
         return base_name, f"Error: Unexpected ({type(e).__name__})", str(output_nwk_path)
 
 def parse_arguments() -> argparse.Namespace:
@@ -197,8 +202,10 @@ def main():
     logging.info(f"Using FastTree arguments: {fasttree_args_list}")
 
     timeout_value = args.timeout if args.timeout and args.timeout > 0 else None
-    if timeout_value: logging.info(f"Setting timeout per job: {timeout_value} seconds")
-    else: logging.info("No timeout set per job.")
+    if timeout_value:
+        logging.info(f"Setting timeout per job: {timeout_value} seconds")
+    else:
+        logging.info("No timeout set per job.")
 
     # Setup directories
     process_log_dir = args.log_dir if args.log_dir else args.output_dir / DEFAULT_LOG_DIR_NAME
@@ -246,8 +253,10 @@ def main():
             try:
                 fname_returned, status, out_nwk_path_str = future.result()
                 results_summary.append({'file': fname_returned, 'status': status, 'output_tree': out_nwk_path_str})
-                if status == "Success": success_count += 1
-                elif status == "Skipped (Output Exists)": skipped_count += 1
+                if status == "Success":
+                    success_count += 1
+                elif status == "Skipped (Output Exists)":
+                    skipped_count += 1
                 else:
                     error_count += 1
                     logging.warning(f"Job for {fname_returned} had status: {status}") 
@@ -273,9 +282,10 @@ def main():
         logging.warning("--- Files with Errors/Timeouts ---")
         error_files_list = [r['file'] for r in results_summary if r['status'] not in ["Success", "Skipped (Output Exists)"]]
         for err_idx, err_file_name in enumerate(error_files_list):
-             if err_idx < 20 : # Log first 20 errors fully
+            if err_idx < 20:  # Log first 20 errors fully
                 logging.warning(f"  - {err_file_name} (Status: {next((item['status'] for item in results_summary if item['file'] == err_file_name), 'Unknown')})")
-        if len(error_files_list) > 20: logging.warning(f"  ... ({len(error_files_list) - 20} additional errors not listed)")
+        if len(error_files_list) > 20:
+            logging.warning(f"  ... ({len(error_files_list) - 20} additional errors not listed)")
         logging.warning(f"Check corresponding logs in {process_log_dir} for details on the {error_count} error(s)/timeout(s).")
 
     logging.info(f"Total time: {end_time - start_time:.2f} seconds")

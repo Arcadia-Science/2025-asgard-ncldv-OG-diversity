@@ -57,7 +57,8 @@ def calculate_msa_metrics(alignment):
         if effective_n > 1:
             for count in counts.values():
                 p = count / effective_n
-                if p > 0: col_entropy -= p * math.log2(p)
+                if p > 0:
+                    col_entropy -= p * math.log2(p)
         col_entropies.append(col_entropy)
     
     mean_entropy = np.mean(col_entropies) if col_entropies else 0.0
@@ -102,7 +103,8 @@ def process_single_og(og_id, msa_path, tree_path):
     try:
         # Process MSA
         alignment = AlignIO.read(msa_path, "fasta")
-        if not alignment: raise ValueError("MSA file is empty or invalid.")
+        if not alignment:
+            raise ValueError("MSA file is empty or invalid.")
         results.update(calculate_msa_metrics(alignment))
     except Exception as e:
         results["Error"] = f"MSA_Error: {e}"
@@ -112,7 +114,8 @@ def process_single_og(og_id, msa_path, tree_path):
         # Process Tree
         if tree_path and tree_path.exists():
             tree = Phylo.read(tree_path, "newick")
-            if not tree: raise ValueError("Tree file is empty or invalid.")
+            if not tree:
+                raise ValueError("Tree file is empty or invalid.")
             results.update(calculate_tree_metrics(tree))
         else:
             results["Error"] = "Tree_File_Not_Found"
