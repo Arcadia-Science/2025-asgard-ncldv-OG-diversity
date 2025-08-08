@@ -7,6 +7,8 @@ Using Snakemake provides several advantages:
 - **Scalability**: Snakemake can automatically parallelize jobs and is compatible with cluster and cloud computing environments.
 - **Resumability**: If the workflow is interrupted, it can be resumed from where it left off without re-running completed steps.
 
+**Note on Resource Usage:** The `calculate_all_vs_all_metrics` step (the structural comparison) is extremely computationally intensive. The original analysis was performed on a high-performance AWS EC2 instance with 128 CPUs. Please ensure you run this workflow on a machine with sufficient resources, especially for this step.
+
 ## 1. Installation & Setup
 
 This workflow assumes you have already set up the main conda environment as described in the parent `README.md`.
