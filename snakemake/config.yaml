@@ -1,0 +1,26 @@
+# -------------------------------------------------------------------
+# Configuration for the Asgard OG Diversity Snakemake Workflow
+# -------------------------------------------------------------------
+
+# --- Input Data Paths ---
+# These files are large and must be downloaded from Zenodo (DOI: 10.5281/zenodo.16712749)
+# Please update these paths to point to the location of the downloaded files.
+proteome_db: "proteome_database_v3.5.csv"
+pdb_dir: "data/structures/alphafold" # Example path, user must provide their own.
+
+# --- Script and Result Paths ---
+# These are relative to the root of the repository.
+scripts_dir: "scripts"
+results_dir: "snakemake/results"
+log_dir: "snakemake/logs"
+
+# --- Parameters ---
+# Minimum number of members for an OG to be included in the analysis.
+min_members: 20
+
+# --- Resource Allocation ---
+# Number of cores/workers to use for parallelizable tasks.
+mafft_cores: 8
+refine_cores: 8
+fasttree_cores: 8
+tmalign_cores: 8
