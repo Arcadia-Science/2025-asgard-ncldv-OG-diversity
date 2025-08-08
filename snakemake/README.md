@@ -7,6 +7,8 @@ Using Snakemake provides several advantages:
 - **Scalability**: Snakemake can automatically parallelize jobs and is compatible with cluster and cloud computing environments.
 - **Resumability**: If the workflow is interrupted, it can be resumed from where it left off without re-running completed steps.
 
+**Note on Resource Usage:** The `calculate_all_vs_all_metrics` step (the structural comparison) is extremely computationally intensive. The original analysis was performed on a high-performance AWS EC2 instance with 128 CPUs. Please ensure you run this workflow on a machine with sufficient resources, especially for this step.
+
 ## 1. Installation & Setup
 
 This workflow assumes you have already set up the main conda environment as described in the parent `README.md`.
@@ -45,8 +47,6 @@ snakemake --snakefile snakemake/Snakefile --cores 8 --use-conda
 ```
 - `--cores 8`: Specifies the total number of cores Snakemake can use. Adjust this based on your machine.
 - `--use-conda`: Ensures that if any rule had a specific conda environment, it would be used. It's good practice to include this.
-
-**Note on Resource Usage:** The `calculate_all_vs_all_metrics` step (the structural comparison) is extremely computationally intensive. The original analysis was performed on a high-performance AWS EC2 instance with 128 CPUs. Please ensure you run this workflow on a machine with sufficient resources, especially for this step.
 
 ### Visualizing the Workflow
 You can generate a Directed Acyclic Graph (DAG) to visualize the dependencies in the workflow. This requires `graphviz` to be installed (`mamba install -c conda-forge graphviz`).
