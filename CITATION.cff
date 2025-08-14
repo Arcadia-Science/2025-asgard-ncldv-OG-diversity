@@ -1,8 +1,12 @@
 cff-version: 1.2.0
 message: If you use this software, please cite the associated publication.
-title: Sequence-structure relationships among Asgard archaea proteins
+title: Mapping the spectrum of archaeal protein sequence–structure relationships
 doi: 10.57844/arcadia-xfqs-5k8a
 authors:
+- family-names: Cheveralls
+  given-names: Keith
+  affiliation: Arcadia Science
+  orcid: https://orcid.org/0000-0002-4157-6087
 - family-names: Goldstein
   given-names: Stephen A.
   affiliation: Arcadia Science
@@ -16,7 +20,7 @@ authors:
   affiliation: Arcadia Science
   orcid: https://orcid.org/0000-0002-1073-1494
 preferred-citation:
-  title: Sequence-structure relationships among Asgard archaea proteins
+  title: Mapping the spectrum of archaeal protein sequence–structure relationships
   type: article
   doi: 10.57844/arcadia-xfqs-5k8a
   authors:
