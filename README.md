@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This repository contains the scripts and analysis notebooks used to investigate the relationship between sequence diversity and structural diversity within orthologous groups (OGs) from Asgard archaea. The primary motivation was to determined whether we could find global rules to characterize the relationship of protein sequence and structure in Asgard archaea proteomes, representing ~2 billion years of evolution. We found no correlation between structural and phylogenetic diversity, and only weak correlations between sequence and structural diversity. Instead, we found that the subset of orthogroups with the least structural diversity comprise protein families where the structure is effectively resistent to sequence divergence. We
+This repository accompanies the pub, "[Mapping the spectrum of archaeal protein sequence–structure relationships](https://doi.org/10.57844/arcadia-xfqs-5k8a)."
+
+This repository contains the scripts and analysis notebooks used to investigate the relationship between sequence diversity and structural diversity within orthologous groups (OGs) from Asgard archaea. The primary motivation was to determined whether we could find global rules to characterize the relationship of protein sequence and structure in Asgard archaea proteomes, representing ~2 billion years of evolution. We found no correlation between structural and phylogenetic diversity, and only weak correlations between sequence and structural diversity. Instead, we found that the subset of orthogroups with the least structural diversity comprise protein families where the structure is effectively resistent to sequence divergence.
 
 ## Installation and Setup
 
