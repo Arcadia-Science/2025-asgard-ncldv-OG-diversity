@@ -11,10 +11,6 @@ authors:
   given-names: Stephen A.
   affiliation: Arcadia Science
   orcid: https://orcid.org/0000-0002-9397-1097
-- family-names: Mets
-  given-names: David G.
-  affiliation: Arcadia Science
-  orcid: https://orcid.org/0000-0002-0803-0912
 - family-names: York
   given-names: Ryan
   affiliation: Arcadia Science
@@ -28,10 +24,6 @@ preferred-citation:
     given-names: Stephen A.
     affiliation: Arcadia Science
     orcid: https://orcid.org/0000-0002-9397-1097
-  - family-names: Mets
-    given-names: David G.
-    affiliation: Arcadia Science
-    orcid: https://orcid.org/0000-0002-0803-0912
   - family-names: York
     given-names: Ryan
     affiliation: Arcadia Science
