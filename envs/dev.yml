@@ -139,6 +139,7 @@ dependencies:
   - libxml2=2.13.7
   - libzlib=1.3.1
   - llvm-openmp=20.1.3
+  - mafft=7.526
   - markupsafe=3.0.2
   - matplotlib=3.9.4
   - matplotlib-base=3.9.4
@@ -199,8 +200,6 @@ dependencies:
   - pure_eval=0.2.3
   - pycparser=2.22
   - pygments=2.19.1
-  - pyobjc-core=11.0
-  - pyobjc-framework-cocoa=11.0
   - pyparsing=3.2.3
   - pysocks=1.7.1
   - python=3.9.22
